@@ -1,15 +1,23 @@
+
 import streamlit as st
-import uuid
 from supabase import create_client
+from uuid import uuid4
 
+# =====================================
+# SUPABASE CONNECTION
+# =====================================
 
-@st.cache_resource
-def get_database():
-    url = st.secrets["SUPABASE_URL"]
-    key = st.secrets["SUPABASE_SERVICE_ROLE_KEY"]
+SUPABASE_URL = st.secrets["https://nkkdyxtkvrcnhguxepbs.supabase.co"]
+SUPABASE_KEY = st.secrets["sb_publishable_FoHhPzAD7U-2g0daTKPOiQ_f16FIKme"]
 
-    return create_client(url, key)
+supabase = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY
+)
 
+# =====================================
+# CREATE BOOKING
+# =====================================
 
 def create_booking(
     customer,
@@ -17,43 +25,49 @@ def create_booking(
     station,
     booking_date,
     booking_time,
-    energy_kwh,
-    price_per_kwh
+    energy,
+    price
 ):
-    db = get_database()
+    booking_id = str(uuid4())[:8].upper()
 
-    # UUID provides a highly collision-resistant booking ID.
-    booking_id = f"EV-{uuid.uuid4().hex[:12].upper()}"
+    energy = float(energy)
+    price = float(price)
 
-    estimated_bill = round(
-        float(energy_kwh) * float(price_per_kwh),
-        2
-    )
+    bill = energy * price
 
-    record = {
+    booking_data = {
         "booking_id": booking_id,
         "customer": customer,
         "vehicle": vehicle,
         "station": station,
         "booking_date": str(booking_date),
         "booking_time": str(booking_time),
-        "energy_kwh": float(energy_kwh),
-        "price_per_kwh": float(price_per_kwh),
-        "estimated_bill": estimated_bill,
+        "energy_kwh": energy,
+        "price_per_kwh": price,
+        "estimated_bill": round(bill, 2),
         "status": "Booked"
     }
 
-    # The database primary key rejects duplicate IDs.
-    result = db.table("bookings").insert(record).execute()
+    response = (
+        supabase.table("bookings")
+        .insert(booking_data)
+        .execute()
+    )
 
-    return booking_id, estimated_bill
+    if not response.data:
+        raise Exception("Booking insert returned no data")
 
+    return booking_id, round(bill, 2)
+
+
+# =====================================
+# GET ALL BOOKINGS
+# =====================================
 
 def get_all_bookings():
-    db = get_database()
 
-    result = (
-        db.table("bookings")
+    response = (
+        supabase.table("bookings")
         .select("*")
         .order("created_at", desc=True)
         .execute()
@@ -61,18 +75,22 @@ def get_all_bookings():
 
     bookings = []
 
-    for row in result.data:
-        bookings.append({
-            "Booking ID": row["booking_id"],
-            "Customer": row["customer"],
-            "Vehicle": row["vehicle"],
-            "Station": row["station"],
-            "Date": row["booking_date"],
-            "Time": row["booking_time"],
-            "Energy (kWh)": float(row["energy_kwh"]),
-            "Price (₹)": float(row["price_per_kwh"]),
-            "Estimated Bill (₹)": float(row["estimated_bill"]),
-            "Status": row["status"]
-        })
+    for row in response.data:
+
+        booking = {
+            "Booking ID": row.get("booking_id"),
+            "Customer": row.get("customer"),
+            "Vehicle": row.get("vehicle"),
+            "Station": row.get("station"),
+            "Date": row.get("booking_date"),
+            "Time": row.get("booking_time"),
+            "Energy (kWh)": row.get("energy_kwh"),
+            "Price (₹)": row.get("price_per_kwh"),
+            "Estimated Bill (₹)": row.get("estimated_bill"),
+            "Status": row.get("status"),
+            "Created At": row.get("created_at")
+        }
+
+        bookings.append(booking)
 
     return bookings
