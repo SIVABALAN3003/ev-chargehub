@@ -10,7 +10,6 @@ page_icon="⚡",
 layout="wide"
 )
 
----------------- DESIGN ----------------
 
 st.markdown("""
 
@@ -36,7 +35,6 @@ div.stButton > button {
 }
 </style>""", unsafe_allow_html=True)
 
----------------- STATION DATA ----------------
 
 stations = [
 {
@@ -62,7 +60,7 @@ stations = [
 }
 ]
 
----------------- HEADER ----------------
+
 
 st.title("⚡ EV ChargeHub")
 
@@ -80,7 +78,7 @@ st.info(
 "are sample data. Booking records are stored in Supabase."
 )
 
----------------- NAVIGATION ----------------
+
 
 page = st.sidebar.radio(
 "Navigation",
@@ -94,7 +92,7 @@ page = st.sidebar.radio(
 ]
 )
 
----------------- HOME ----------------
+
 
 if page == "Home":
 
@@ -136,7 +134,6 @@ col3.caption(
     "Estimate charging costs and download invoices."
 )
 
----------------- STATIONS ----------------
 
 elif page == "Charging Stations":
 
@@ -167,7 +164,6 @@ st.caption(
     "been verified as live station availability."
 )
 
----------------- BOOKING ----------------
 
 elif page == "Book a Slot":
 
@@ -253,7 +249,6 @@ if submitted:
                 "Check the database configuration and try again."
             )
 
----------------- COST CALCULATOR ----------------
 
 elif page == "Cost Calculator":
 
@@ -311,7 +306,7 @@ else:
         "to charging losses and station tariffs."
     )
 
----------------- BOOKING HISTORY ----------------
+
 
 elif page == "My Bookings":
 
@@ -382,7 +377,6 @@ except Exception:
         "Check the database configuration."
     )
 
----------------- ADMIN DASHBOARD ----------------
 
 elif page == "Admin Dashboard":
 
@@ -440,7 +434,7 @@ except Exception:
         "Check your database configuration."
     )
 
----------------- FOOTER ----------------
+
 
 st.divider()
 
