@@ -1,341 +1,339 @@
+
 import streamlit as st
 import pandas as pd
 
 from datetime import date, time
 from database import create_booking, get_all_bookings
 
+# =====================================
+# PAGE CONFIGURATION
+# =====================================
 st.set_page_config(
-page_title="EV ChargeHub",
-page_icon="⚡",
-layout="wide"
+    page_title="EV ChargeHub",
+    page_icon="⚡",
+    layout="wide"
 )
 
-
+# =====================================
+# DESIGN
+# =====================================
 st.markdown("""
-
 <style>
 .stApp {
     background-color: #f4f7fb;
 }
-
 h1, h2, h3 {
     color: #12345a;
 }
-
 div.stButton > button {
     background-color: #087f5b;
     color: white;
     border-radius: 8px;
 }
-
 [data-testid="stMetric"] {
     background-color: white;
     padding: 15px;
     border-radius: 10px;
 }
-</style>""", unsafe_allow_html=True)
+</style>
+""", unsafe_allow_html=True)
 
-
+# =====================================
+# SAMPLE CHARGING STATIONS
+# =====================================
 stations = [
-{
-"name": "Chennai Central Charging Hub",
-"location": "Chennai",
-"power": 60,
-"price": 8,
-"status": "Available"
-},
-{
-"name": "Tambaram EV Point",
-"location": "Tambaram",
-"power": 30,
-"price": 7,
-"status": "Available"
-},
-{
-"name": "Guindy Fast Charge",
-"location": "Guindy",
-"power": 120,
-"price": 10,
-"status": "Available"
-}
+    {
+        "name": "Chennai Central Charging Hub",
+        "location": "Chennai",
+        "power": 60,
+        "price": 8,
+        "status": "Available"
+    },
+    {
+        "name": "Tambaram EV Point",
+        "location": "Tambaram",
+        "power": 30,
+        "price": 7,
+        "status": "Available"
+    },
+    {
+        "name": "Guindy Fast Charge",
+        "location": "Guindy",
+        "power": 120,
+        "price": 10,
+        "status": "Available"
+    }
 ]
 
-
-
+# =====================================
+# HEADER
+# =====================================
 st.title("⚡ EV ChargeHub")
 
 st.subheader(
-"Smart EV Charging. Simple Booking. Transparent Billing."
+    "Smart EV Charging. Simple Booking. Transparent Billing."
 )
 
 st.write(
-"Find charging stations, book a charging slot, "
-"estimate charging costs, and manage bookings."
+    "Find charging stations, book a charging slot, "
+    "estimate charging costs, and manage bookings."
 )
 
 st.info(
-"Project demonstration: station listings and availability "
-"are sample data. Booking records are stored in Supabase."
+    "Project demonstration: station listings and "
+    "availability are sample data. Booking records "
+    "are stored in Supabase."
 )
 
-
-
+# =====================================
+# NAVIGATION
+# =====================================
 page = st.sidebar.radio(
-"Navigation",
-[
-"Home",
-"Charging Stations",
-"Book a Slot",
-"Cost Calculator",
-"My Bookings",
-"Admin Dashboard"
-]
+    "Navigation",
+    [
+        "Home",
+        "Charging Stations",
+        "Book a Slot",
+        "Cost Calculator",
+        "My Bookings",
+        "Admin Dashboard"
+    ]
 )
 
-
-
+# =====================================
+# HOME
+# =====================================
 if page == "Home":
 
-st.header("Welcome to the Future of EV Charging")
+    st.header("Welcome to the Future of EV Charging")
 
-try:
-    bookings = get_all_bookings()
+    try:
+        bookings = get_all_bookings()
+
+        col1, col2, col3 = st.columns(3)
+
+        col1.metric("Charging Stations", len(stations))
+        col2.metric("Total Bookings", len(bookings))
+        col3.metric("Platform", "Online")
+
+    except Exception as e:
+        st.error("Database connection failed.")
+        st.caption(str(e))
+
+    st.divider()
+
+    st.header("Why EV ChargeHub?")
 
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Charging Stations", len(stations))
-    col2.metric("Total Bookings", len(bookings))
-    col3.metric("Platform", "Online")
-
-except Exception:
-    st.error(
-        "Database connection failed. "
-        "Check your Streamlit Secrets settings."
+    col1.write("🔌 **Find Charging Stations**")
+    col1.caption(
+        "Explore station locations, charging power, and prices."
     )
 
-st.divider()
+    col2.write("📅 **Book a Charging Slot**")
+    col2.caption(
+        "Create a booking and receive a unique booking ID."
+    )
 
-st.header("Why EV ChargeHub?")
+    col3.write("🧾 **Transparent Billing**")
+    col3.caption(
+        "Estimate charging costs and download invoices."
+    )
 
-col1, col2, col3 = st.columns(3)
-
-col1.write("🔌 **Find Charging Stations**")
-col1.caption(
-    "Explore station locations, charging power, and prices."
-)
-
-col2.write("📅 **Book a Charging Slot**")
-col2.caption(
-    "Create a booking and receive a unique booking ID."
-)
-
-col3.write("🧾 **Transparent Billing**")
-col3.caption(
-    "Estimate charging costs and download invoices."
-)
-
-
+# =====================================
+# CHARGING STATIONS
+# =====================================
 elif page == "Charging Stations":
 
-st.header("🔌 Charging Stations")
+    st.header("🔌 Charging Stations")
 
-for station in stations:
+    for station in stations:
 
-    with st.container(border=True):
+        with st.container(border=True):
 
-        st.subheader(station["name"])
+            st.subheader(station["name"])
 
-        st.write("📍 Location:", station["location"])
+            st.write("📍 Location:", station["location"])
+            st.write("⚡ Charging power:", f'{station["power"]} kW')
+            st.write("💰 Price:", f'₹{station["price"]} per kWh')
 
-        st.write(
-            "⚡ Charging power:",
-            f'{station["power"]} kW'
-        )
+            st.success(station["status"])
 
-        st.write(
-            "💰 Price:",
-            f'₹{station["price"]} per kWh'
-        )
+    st.caption(
+        "Station information is illustrative and has not "
+        "been verified as live station availability."
+    )
 
-        st.success(station["status"])
-
-st.caption(
-    "Station information is illustrative and has not "
-    "been verified as live station availability."
-)
-
-
+# =====================================
+# BOOK A SLOT
+# =====================================
 elif page == "Book a Slot":
 
-st.header("📅 Book a Charging Slot")
+    st.header("📅 Book a Charging Slot")
 
-station_names = [s["name"] for s in stations]
+    station_names = [s["name"] for s in stations]
 
-with st.form("booking_form"):
+    with st.form("booking_form"):
 
-    customer = st.text_input("Customer name")
+        customer = st.text_input("Customer name")
+        vehicle = st.text_input("Vehicle model")
 
-    vehicle = st.text_input("Vehicle model")
+        selected_station = st.selectbox(
+            "Select charging station",
+            station_names
+        )
 
-    selected_station = st.selectbox(
-        "Select charging station",
-        station_names
-    )
+        booking_date = st.date_input(
+            "Booking date",
+            min_value=date.today()
+        )
 
-    booking_date = st.date_input(
-        "Booking date",
-        min_value=date.today()
-    )
+        booking_time = st.time_input(
+            "Booking time",
+            value=time(10, 0)
+        )
 
-    booking_time = st.time_input(
-        "Booking time",
-        value=time(10, 0)
-    )
+        energy = st.number_input(
+            "Energy required (kWh)",
+            min_value=1.0,
+            max_value=200.0,
+            value=20.0,
+            step=1.0
+        )
 
-    energy = st.number_input(
-        "Energy required (kWh)",
+        submitted = st.form_submit_button("Confirm Booking")
+
+    if submitted:
+
+        if not customer.strip() or not vehicle.strip():
+
+            st.error("Enter your name and vehicle model.")
+
+        else:
+
+            station = next(
+                item for item in stations
+                if item["name"] == selected_station
+            )
+
+            try:
+                booking_id, bill = create_booking(
+                    customer.strip(),
+                    vehicle.strip(),
+                    selected_station,
+                    booking_date,
+                    booking_time,
+                    energy,
+                    station["price"]
+                )
+
+                st.success("Booking created successfully!")
+
+                st.write("Your Booking ID:")
+                st.code(str(booking_id))
+
+                st.metric("Estimated Bill", f"₹{float(bill):.2f}")
+
+                st.info(
+                    "Keep your booking ID for future reference."
+                )
+
+            except Exception as e:
+                st.error("Booking could not be saved.")
+                st.caption(str(e))
+
+# =====================================
+# COST CALCULATOR
+# =====================================
+elif page == "Cost Calculator":
+
+    st.header("🔋 Charging Cost Calculator")
+
+    capacity = st.number_input(
+        "Battery capacity (kWh)",
         min_value=1.0,
-        max_value=200.0,
-        value=20.0,
-        step=1.0
+        max_value=250.0,
+        value=60.0
     )
 
-    submitted = st.form_submit_button(
-        "Confirm Booking"
+    initial = st.slider(
+        "Initial battery level (%)",
+        0, 99, 20
     )
 
-if submitted:
+    target = st.slider(
+        "Target battery level (%)",
+        1, 100, 80
+    )
 
-    if not customer.strip() or not vehicle.strip():
+    rate = st.number_input(
+        "Charging price (₹/kWh)",
+        min_value=0.1,
+        value=8.0
+    )
 
-        st.error(
-            "Enter your name and vehicle model."
+    if target <= initial:
+
+        st.warning(
+            "Target battery level must exceed the initial level."
         )
 
     else:
 
-        station = next(
-            item for item in stations
-            if item["name"] == selected_station
+        energy_needed = capacity * ((target - initial) / 100)
+
+        estimated_cost = energy_needed * rate
+
+        col1, col2 = st.columns(2)
+
+        col1.metric(
+            "Energy Required",
+            f"{energy_needed:.2f} kWh"
         )
 
-        try:
-            booking_id, bill = create_booking(
-                customer.strip(),
-                vehicle.strip(),
-                selected_station,
-                booking_date,
-                booking_time,
-                energy,
-                station["price"]
-            )
+        col2.metric(
+            "Estimated Charging Cost",
+            f"₹{estimated_cost:.2f}"
+        )
 
-            st.success("Booking created successfully!")
+        st.caption(
+            "Estimate excludes charging losses and any "
+            "additional station fees."
+        )
 
-            st.code(booking_id)
-
-            st.metric(
-                "Estimated Bill",
-                f"₹{bill:.2f}"
-            )
-
-            st.info(
-                "Keep your booking ID for future reference."
-            )
-
-        except Exception:
-            st.error(
-                "Booking could not be saved. "
-                "Check the database configuration and try again."
-            )
-
-
-elif page == "Cost Calculator":
-
-st.header("🔋 Charging Cost Calculator")
-
-capacity = st.number_input(
-    "Battery capacity (kWh)",
-    min_value=1.0,
-    max_value=250.0,
-    value=60.0
-)
-
-initial = st.slider(
-    "Initial battery level (%)",
-    0, 99, 20
-)
-
-target = st.slider(
-    "Target battery level (%)",
-    1, 100, 80
-)
-
-rate = st.number_input(
-    "Charging price (₹/kWh)",
-    min_value=0.1,
-    value=8.0
-)
-
-if target <= initial:
-
-    st.warning(
-        "Target battery level must exceed the initial level."
-    )
-
-else:
-
-    energy_needed = capacity * (
-        (target - initial) / 100
-    )
-
-    estimated_cost = energy_needed * rate
-
-    st.metric(
-        "Energy Required",
-        f"{energy_needed:.2f} kWh"
-    )
-
-    st.metric(
-        "Estimated Charging Cost",
-        f"₹{estimated_cost:.2f}"
-    )
-
-    st.caption(
-        "This is an estimate. Actual costs may vary due "
-        "to charging losses and station tariffs."
-    )
-
-
-
+# =====================================
+# MY BOOKINGS
+# =====================================
 elif page == "My Bookings":
 
-st.header("📋 Booking History")
+    st.header("📋 Booking History")
 
-try:
-    bookings = get_all_bookings()
+    try:
+        bookings = get_all_bookings()
 
-    if bookings:
+        if bookings:
 
-        df = pd.DataFrame(bookings)
+            df = pd.DataFrame(bookings)
 
-        st.dataframe(
-            df,
-            use_container_width=True
-        )
+            st.dataframe(
+                df,
+                use_container_width=True
+            )
 
-        selected_id = st.selectbox(
-            "Select booking for invoice",
-            df["Booking ID"].tolist()
-        )
+            if "Booking ID" in df.columns:
 
-        booking = next(
-            item for item in bookings
-            if item["Booking ID"] == selected_id
-        )
+                selected_id = st.selectbox(
+                    "Select booking for invoice",
+                    df["Booking ID"].tolist()
+                )
 
-        invoice = f"""
+                booking = next(
+                    item for item in bookings
+                    if str(item["Booking ID"]) == str(selected_id)
+                )
 
+                invoice = f"""
 EV CHARGEHUB
 SIMULATED INVOICE
 
@@ -355,89 +353,80 @@ Status: {booking['Status']}
 This is a simulated invoice, not a payment receipt.
 """
 
-        st.text(invoice)
+                st.text(invoice)
 
-        st.download_button(
-            "Download Invoice",
-            data=invoice,
-            file_name=f"{selected_id}_invoice.txt",
-            mime="text/plain"
-        )
+                st.download_button(
+                    "Download Invoice",
+                    data=invoice,
+                    file_name=f"{selected_id}_invoice.txt",
+                    mime="text/plain"
+                )
 
-    else:
+            else:
+                st.warning(
+                    "Booking ID column is missing in database results."
+                )
 
-        st.info(
-            "No bookings yet. Create your first booking."
-        )
+        else:
+            st.info(
+                "No bookings yet. Create your first booking."
+            )
 
-except Exception:
+    except Exception as e:
+        st.error("Unable to retrieve bookings.")
+        st.caption(str(e))
 
-    st.error(
-        "Unable to retrieve bookings. "
-        "Check the database configuration."
-    )
-
-
+# =====================================
+# ADMIN DASHBOARD
+# =====================================
 elif page == "Admin Dashboard":
 
-st.header("📊 Admin Dashboard")
+    st.header("📊 Admin Dashboard")
 
-try:
-    bookings = get_all_bookings()
+    try:
+        bookings = get_all_bookings()
 
-    col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(3)
 
-    col1.metric(
-        "Total Stations",
-        len(stations)
-    )
+        col1.metric("Total Stations", len(stations))
+        col2.metric("Total Bookings", len(bookings))
 
-    col2.metric(
-        "Total Bookings",
-        len(bookings)
-    )
+        total_value = sum(
+            float(item.get("Estimated Bill (₹)", 0) or 0)
+            for item in bookings
+        )
 
-    total_value = sum(
-        item["Estimated Bill (₹)"]
-        for item in bookings
-    )
+        col3.metric(
+            "Estimated Booking Value",
+            f"₹{total_value:.2f}"
+        )
 
-    col3.metric(
-        "Estimated Booking Value",
-        f"₹{total_value:.2f}"
-    )
-
-    st.subheader("Charging Station Details")
-
-    st.dataframe(
-        pd.DataFrame(stations),
-        use_container_width=True
-    )
-
-    st.subheader("Recent Bookings")
-
-    if bookings:
+        st.subheader("Charging Station Details")
 
         st.dataframe(
-            pd.DataFrame(bookings),
+            pd.DataFrame(stations),
             use_container_width=True
         )
 
-    else:
+        st.subheader("Recent Bookings")
 
-        st.info("No bookings have been created yet.")
+        if bookings:
+            st.dataframe(
+                pd.DataFrame(bookings),
+                use_container_width=True
+            )
+        else:
+            st.info("No bookings have been created yet.")
 
-except Exception:
+    except Exception as e:
+        st.error("Unable to load dashboard data.")
+        st.caption(str(e))
 
-    st.error(
-        "Unable to load dashboard data. "
-        "Check your database configuration."
-    )
-
-
-
+# =====================================
+# FOOTER
+# =====================================
 st.divider()
 
 st.caption(
-"EV ChargeHub | Smart EV Charging Station Management System"
+    "EV ChargeHub | Smart EV Charging Station Management System"
 )
